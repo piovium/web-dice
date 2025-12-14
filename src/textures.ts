@@ -27,7 +27,7 @@ export async function getDiceMaterials(): Promise<THREE.MeshStandardMaterial[]> 
         const image = new Image();
         const { resolve, reject, promise } = Promise.withResolvers();
         image.crossOrigin = "anonymous";
-        image.src = `https://assets.gi-tcg.guyutongxue.site/api/v2/images/${
+        image.src = `https://gi-tcg-assets-api-hf.guyutongxue.site/api/v4/image/${
           i + 1
         }`;
         image.onload = resolve;
