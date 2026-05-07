@@ -51,7 +51,7 @@ addChessboard(scene);
 const preResult = preSimulate(8);
 console.log(preResult.map((r) => r.sleepTime));
 
-const dices: THREE.Group[] = Array.from(preResult, (r) => addDice(scene, 0, r));
+const dices: THREE.Group[] = Array.from(preResult, (r, i) => addDice(scene, i, r));
 const totalTime = preResult.reduce((acc, r) => Math.max(acc, r.sleepTime), 0);
 
 const controls = new OrbitControls(camera, renderer.domElement);

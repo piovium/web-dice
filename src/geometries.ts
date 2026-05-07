@@ -17,14 +17,14 @@ diceGeometry.setAttribute(
   new THREE.Float32BufferAttribute(
     // prettier-ignore
     [
-    halfSqrt3, 0.5,  0, 0,  0, 1,
-    halfSqrt3, 0.5,  0, 0,  0, 1,
-    halfSqrt3, 0.5,  0, 0,  0, 1,
-    halfSqrt3, 0.5,  0, 0,  0, 1,
-    halfSqrt3, 0.5,  0, 0,  0, 1,
-    halfSqrt3, 0.5,  0, 0,  0, 1,
-    halfSqrt3, 0.5,  0, 0,  0, 1,
-    halfSqrt3, 0.5,  0, 0,  0, 1,
+      0.5, halfSqrt3, 0, 0, 1, 0,
+      1, 0, 0.5, halfSqrt3, 0, 0,
+      0.5, halfSqrt3, 0, 0, 1, 0,
+      1, 0, 0.5, halfSqrt3, 0, 0,
+      0.5, halfSqrt3, 0, 0, 1, 0,
+      1, 0, 0.5, halfSqrt3, 0, 0,
+      0.5, halfSqrt3, 0, 0, 1, 0,
+      1, 0, 0.5, halfSqrt3, 0, 0,
   ],
     2,
   ),
