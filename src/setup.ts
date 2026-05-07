@@ -150,7 +150,6 @@ export function addDice(
   targetColor: number,
   preSimulate: SimulateResult,
 ): THREE.Group {
-  // targetColor = [5, 6, 4, 7, 2, 1, 3, 0][targetColor];
   const targetFace = [6, 3, 1, 5, 2, 0, 4, 7][targetColor];
   const { finalUpFace, sleepTime } = preSimulate;
 
