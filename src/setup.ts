@@ -150,7 +150,7 @@ export function addDice(
   targetColor: number,
   preSimulate: SimulateResult,
 ): THREE.Group {
-  const targetFace = [6, 3, 1, 5, 2, 0, 4, 7][targetColor];
+  const targetFace = [6, 3, 1, 0, 2, 5, 4, 7][targetColor];
   const { finalUpFace, sleepTime } = preSimulate;
 
   const diceGroup = new THREE.Group();
@@ -162,7 +162,7 @@ export function addDice(
   );
   diceMesh.castShadow = true;
 
-  // 施加八面体对称旋转：让 targetColor 的卦限方向对齐到 finalUpFace 的卦限方向
+  // 施加八面体对称旋转：让 targetFace 的卦限方向对齐到 finalUpFace 的卦限方向
   const correctionRotation = getOctahedralRotation(targetFace, finalUpFace);
   diceMesh.quaternion.copy(correctionRotation);
 
