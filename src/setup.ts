@@ -39,33 +39,93 @@ const OCTAHEDRAL_ROTATIONS: THREE.Quaternion[] = [
   new THREE.Quaternion(0, 0, 0, 1),
 
   // 绕坐标轴90°/180°/270°
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 0, 0),
+    Math.PI / 2,
+  ),
   new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 0, 0),
+    -Math.PI / 2,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 1, 0),
+    Math.PI / 2,
+  ),
   new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 1, 0),
+    -Math.PI / 2,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 0, 1),
+    Math.PI / 2,
+  ),
   new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI / 2),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 0, 1),
+    -Math.PI / 2,
+  ),
 
   // 绕体对角线120°/240°
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 1, 1).normalize(), 2 * Math.PI / 3),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 1, 1).normalize(), -2 * Math.PI / 3),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 1, -1).normalize(), 2 * Math.PI / 3),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 1, -1).normalize(), -2 * Math.PI / 3),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, -1, 1).normalize(), 2 * Math.PI / 3),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, -1, 1).normalize(), -2 * Math.PI / 3),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, -1, -1).normalize(), 2 * Math.PI / 3),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, -1, -1).normalize(), -2 * Math.PI / 3),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 1, 1).normalize(),
+    (2 * Math.PI) / 3,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 1, 1).normalize(),
+    (-2 * Math.PI) / 3,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 1, -1).normalize(),
+    (2 * Math.PI) / 3,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 1, -1).normalize(),
+    (-2 * Math.PI) / 3,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, -1, 1).normalize(),
+    (2 * Math.PI) / 3,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, -1, 1).normalize(),
+    (-2 * Math.PI) / 3,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, -1, -1).normalize(),
+    (2 * Math.PI) / 3,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, -1, -1).normalize(),
+    (-2 * Math.PI) / 3,
+  ),
 
   // 绕边心轴180°
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 1, 0).normalize(), Math.PI),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, -1, 0).normalize(), Math.PI),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 1).normalize(), Math.PI),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, -1).normalize(), Math.PI),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 1).normalize(), Math.PI),
-  new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, -1).normalize(), Math.PI),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 1, 0).normalize(),
+    Math.PI,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, -1, 0).normalize(),
+    Math.PI,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 0, 1).normalize(),
+    Math.PI,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 0, -1).normalize(),
+    Math.PI,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 1, 1).normalize(),
+    Math.PI,
+  ),
+  new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(0, 1, -1).normalize(),
+    Math.PI,
+  ),
 ];
 
 // 获取将 from 卦限映射到 to 卦限的八面体旋转
@@ -90,30 +150,38 @@ export function addDice(
   targetColor: number,
   preSimulate: SimulateResult,
 ): THREE.Group {
+  // targetColor = [5, 6, 4, 7, 2, 1, 3, 0][targetColor];
+  const targetFace = [6, 3, 1, 5, 2, 0, 4, 7][targetColor];
   const { finalUpFace, sleepTime } = preSimulate;
 
   const diceGroup = new THREE.Group();
 
   // 每个骰子使用独立的材质数组（避免高亮时互相影响）
-  const diceMesh = new THREE.Mesh(diceGeometry, [...diceMaterials]);
+  const diceMesh = new THREE.Mesh(
+    diceGeometry,
+    diceMaterials.map((m) => m.clone()),
+  );
   diceMesh.castShadow = true;
 
   // 施加八面体对称旋转：让 targetColor 的卦限方向对齐到 finalUpFace 的卦限方向
-  const correctionRotation = getOctahedralRotation(targetColor, finalUpFace);
+  const correctionRotation = getOctahedralRotation(targetFace, finalUpFace);
   diceMesh.quaternion.copy(correctionRotation);
 
   diceGroup.add(diceMesh);
 
   // 高亮：在骰子即将停下前2秒，让朝上的面自发光
-  setTimeout(() => {
-    const materials = diceMesh.material as THREE.MeshStandardMaterial[];
-    const oldMat = materials[finalUpFace];
-    const mat = oldMat.clone();
-    mat.emissive.set(DICE_COLORS[targetColor]);
-    mat.needsUpdate = true;
-    materials[finalUpFace] = mat;
-    oldMat.dispose();
-  }, sleepTime * 1000 - 2000);
+  setTimeout(
+    () => {
+      const materials = diceMesh.material;
+      const oldMat = materials[targetColor];
+      const mat = oldMat.clone();
+      mat.emissive.set(DICE_COLORS[targetColor]);
+      mat.needsUpdate = true;
+      materials[targetColor] = mat;
+      oldMat.dispose();
+    },
+    sleepTime * 1000 - 2000,
+  );
 
   scene.add(diceGroup);
   return diceGroup;

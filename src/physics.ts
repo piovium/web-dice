@@ -141,8 +141,9 @@ export function preSimulate(diceCount: number): SimulateResult[] {
       const rotation = new THREE.Quaternion().copy(body.rotation()).invert();
       const up = new THREE.Vector3(0, 1, 0).applyQuaternion(rotation);
       if (body.isSleeping()) {
-        const finalUpFace =
-          (+(up.x > 0) << 2) | (+(up.y > 0) << 1) | +(up.z > 0);
+        const finalUpFace = 
+          (+(up.x > 0) << 2) | (+(up.y > 0) << 1) | +(up.z > 0)
+        ;
         results.set(i, { initRotation, finalUpFace, sleepTime: time });
       }
     }
