@@ -35,8 +35,8 @@ export async function getDiceMaterials(): Promise<THREE.MeshStandardMaterial[]> 
         await promise;
         context.drawImage(
           image,
-          0,
           CANVAS_SIZE / 2 - ICON_R,
+          CANVAS_SIZE * (1 - Math.sqrt(3) / 6) - ICON_R,
           2 * ICON_R,
           2 * ICON_R,
         );
