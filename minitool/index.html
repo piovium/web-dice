@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+  <title>元素骰 · 投掷实验室</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      background: #070b16;
+    }
+  </style>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main id="root">
+    <section class="control-panel" aria-labelledby="page-title">
+      <p class="eyebrow">Elemental Dice Lab</p>
+      <h1 id="page-title">掌控这次投掷</h1>
+      <p class="description">为每枚骰子选择结果，再让物理模拟完成剩下的表演。</p>
+
+      <div id="dice-options" class="dice-options"></div>
+
+      <div class="quick-actions" aria-label="快捷设置">
+        <button id="random-button" type="button">随机结果</button>
+        <button id="omni-button" type="button">全部万能</button>
+      </div>
+
+      <button id="roll-button" class="roll-button" type="button">开始投掷</button>
+      <p id="roll-status" class="status" role="status" aria-live="polite">
+        选择结果后，点击开始投掷
+      </p>
+    </section>
+
+    <p class="gesture-hint">拖动旋转 · 双指缩放</p>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>

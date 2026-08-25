@@ -4,9 +4,10 @@ import {
   CHESSBOARD_LENGTH,
   CHESSBOARD_WIDTH,
 } from "./config";
-import { DICE_COLORS, getDiceMaterials } from "./textures";
+import { DICE_COLORS, getDiceTextures } from "./textures";
 import { diceGeometry } from "./geometries";
-import { SimulateResult } from "./physics";
+import { diceEdgeFragmentShader, diceEdgeVertexShader } from "./shaders/dice-edge.glsl";
+import type { DiceSimResult } from "./physics/types";
 
 export function addChessboard(scene: THREE.Scene) {
   const floorMesh = new THREE.Mesh(
@@ -35,9 +36,9 @@ export function addChessboard(scene: THREE.Scene) {
   scene.add(grid);
 }
 
-const diceMaterialsPromise = getDiceMaterials();
+const diceTexturesPromise = getDiceTextures();
+const GOLD_COLOR = new THREE.Color("#c9a86c");
 
-// 将卦限编码(0-7)转换为方向向量
 function octantToVector(octant: number): THREE.Vector3 {
   return new THREE.Vector3(
     octant & 4 ? 1 : -1,
@@ -46,12 +47,8 @@ function octantToVector(octant: number): THREE.Vector3 {
   ).normalize();
 }
 
-// 正八面体的24个合法旋转（对称群）
 const OCTAHEDRAL_ROTATIONS: THREE.Quaternion[] = [
-  // 恒等
   new THREE.Quaternion(0, 0, 0, 1),
-
-  // 绕坐标轴90°/180°/270°
   new THREE.Quaternion().setFromAxisAngle(
     new THREE.Vector3(1, 0, 0),
     Math.PI / 2,
@@ -79,8 +76,6 @@ const OCTAHEDRAL_ROTATIONS: THREE.Quaternion[] = [
     new THREE.Vector3(0, 0, 1),
     -Math.PI / 2,
   ),
-
-  // 绕体对角线120°/240°
   new THREE.Quaternion().setFromAxisAngle(
     new THREE.Vector3(1, 1, 1).normalize(),
     (2 * Math.PI) / 3,
@@ -113,8 +108,6 @@ const OCTAHEDRAL_ROTATIONS: THREE.Quaternion[] = [
     new THREE.Vector3(1, -1, -1).normalize(),
     (-2 * Math.PI) / 3,
   ),
-
-  // 绕边心轴180°
   new THREE.Quaternion().setFromAxisAngle(
     new THREE.Vector3(1, 1, 0).normalize(),
     Math.PI,
@@ -141,7 +134,6 @@ const OCTAHEDRAL_ROTATIONS: THREE.Quaternion[] = [
   ),
 ];
 
-// 获取将 from 卦限映射到 to 卦限的八面体旋转
 function getOctahedralRotation(from: number, to: number): THREE.Quaternion {
   if (from === to) return new THREE.Quaternion();
 
@@ -158,43 +150,67 @@ function getOctahedralRotation(from: number, to: number): THREE.Quaternion {
   throw new Error(`No octahedral rotation from ${from} to ${to}`);
 }
 
+function createDiceShaderMaterial(
+  map: THREE.Texture,
+  emissiveMap: THREE.Texture,
+  colorIndex: number,
+): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    vertexShader: diceEdgeVertexShader,
+    fragmentShader: diceEdgeFragmentShader,
+    uniforms: {
+      uBaseColor: { value: new THREE.Color("#ffffff") },
+      uGoldColor: { value: GOLD_COLOR },
+      uEdgeWidth: { value: 0.08 },
+      uVertexWidth: { value: 0.3 },
+      uEdgeIntensity: { value: 1.5 },
+      uEmissiveColor: { value: new THREE.Color(DICE_COLORS[colorIndex]) },
+      uEmissiveIntensity: { value: 0.0 },
+      uBrightness: { value: 1.0 },
+      uMap: { value: map },
+      uEmissiveMap: { value: emissiveMap },
+    },
+  });
+}
+
 export async function addDice(
   scene: THREE.Scene,
   targetColor: number,
-  preSimulate: SimulateResult,
+  preSimulate: DiceSimResult,
 ): Promise<DiceHandle> {
-  const diceMaterials = await diceMaterialsPromise;
+  const diceTextures = await diceTexturesPromise;
   const targetFace = [6, 3, 1, 0, 2, 5, 4, 7][targetColor];
   const { finalUpFace, sleepTime } = preSimulate;
 
   const diceGroup = new THREE.Group();
 
-  // 每个骰子使用独立的材质数组（避免高亮时互相影响）
   const diceMesh = new THREE.Mesh(
     diceGeometry,
-    diceMaterials.map((m) => m.clone()),
+    diceTextures.map(({ map, emissiveMap }, i) =>
+      createDiceShaderMaterial(map, emissiveMap, i),
+    ),
   );
   diceMesh.castShadow = true;
 
-  // 施加八面体对称旋转：让 targetFace 的卦限方向对齐到 finalUpFace 的卦限方向
   const correctionRotation = getOctahedralRotation(targetFace, finalUpFace);
   diceMesh.quaternion.copy(correctionRotation);
 
   diceGroup.add(diceMesh);
-
   scene.add(diceGroup);
+
   let isHighlighted = false;
 
   return {
     group: diceGroup,
+    correctionRotation: correctionRotation.clone(),
+    displayQuaternion: new THREE.Quaternion(),
     highlightAt: Math.max(0, sleepTime - 2),
     setHighlighted() {
       if (isHighlighted) return;
       isHighlighted = true;
       const material = diceMesh.material[targetColor];
-      material.emissive.set(DICE_COLORS[targetColor]);
-      material.emissiveIntensity = 0.42;
-      material.needsUpdate = true;
+      material.uniforms.uEmissiveIntensity.value = 0.9;
+      material.uniforms.uBrightness.value = 1.35;
     },
     dispose() {
       scene.remove(diceGroup);
@@ -205,6 +221,8 @@ export async function addDice(
 
 export interface DiceHandle {
   group: THREE.Group;
+  correctionRotation: THREE.Quaternion;
+  displayQuaternion: THREE.Quaternion;
   highlightAt: number;
   setHighlighted: () => void;
   dispose: () => void;

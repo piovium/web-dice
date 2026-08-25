@@ -4,13 +4,26 @@ import debounce from "debounce";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-import { SIMULATE_DT } from "./config";
-import { initializePhysics, preSimulate, simulate } from "./physics";
+import { SIMULATE_DT, DICE_MASS, DICE_RESTITUTION } from "./config";
+import { GATHER_COLS, GATHER_ROWS, GATHER_SPACING_X, GATHER_SPACING_Z, GATHER_Y } from "./config";
+import { diceGeometryPoints } from "./geometries";
+import { PhysicsBackend } from "@dice/physics-backend";
+import { calcFinalUpFace, diceInitPosition } from "./physics/shared";
+import type { BodyTransform, DiceSimResult, IPhysicsWorld } from "./physics/types";
 import { addChessboard, addDice, type DiceHandle } from "./setup";
 import { DICE_COLORS } from "./textures";
 
 const RESULT_NAMES = ["冰", "水", "火", "雷", "风", "岩", "草", "万能"];
 const DICE_COUNT = 8;
+
+function getGatherSpacing(): { x: number; z: number } {
+  const isMobile = window.innerWidth <= 640;
+  return {
+    x: isMobile ? 2.0 : GATHER_SPACING_X,
+    z: isMobile ? 2.0 : GATHER_SPACING_Z,
+  };
+}
+
 
 const root = document.getElementById("root")!;
 const options = document.getElementById("dice-options")!;
@@ -38,13 +51,21 @@ scene.add(rimLight);
 const ambientLight = new THREE.AmbientLight("#bfdbfe", 1.3);
 scene.add(ambientLight);
 
+// 万能骰中心图标右下角的粉色旋转光源
+const OMNI_LIGHT_COLOR = new THREE.Color("rgb(252, 172, 252)");
+const omniLight = new THREE.PointLight(OMNI_LIGHT_COLOR, 80, 16);
+const omniLightPivot = new THREE.Group();
+omniLight.position.set(3.8, 1.0, 3.8);
+omniLightPivot.add(omniLight);
+scene.add(omniLightPivot);
+
 const camera = new THREE.PerspectiveCamera(
-  50,
+  40,
   root.clientWidth / root.clientHeight,
   0.1,
   1000,
 );
-camera.position.set(0, 15.5, 7.5);
+camera.position.set(0, 22, 9);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -71,20 +92,25 @@ addChessboard(scene);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.enablePan = false;
-controls.minDistance = 8;
-controls.maxDistance = 26;
-controls.maxPolarAngle = Math.PI * 0.47;
-controls.target.y = 0.8;
+controls.minDistance = 10;
+controls.maxDistance = 35;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.target.y = 0.5;
+
+const backend = new PhysicsBackend();
 
 const selectors = createResultSelectors();
 let dice: DiceHandle[] = [];
-let simulator: ReturnType<typeof simulate> | undefined;
+let simulator: IPhysicsWorld | undefined;
 let accumulator = 0;
 let simulatedTime = 0;
 let totalTime = 0;
 let rolling = false;
 let physicsReady = false;
 let previousFrame = performance.now();
+
+type RollState = "idle" | "rolling" | "gathering" | "done";
+let rollState: RollState = "idle";
 
 function createResultSelectors() {
   return Array.from({ length: DICE_COUNT }, (_, diceIndex) => {
@@ -129,15 +155,83 @@ function setControlsDisabled(disabled: boolean) {
   selectors.forEach(({ select }) => (select.disabled = disabled));
 }
 
-async function startRoll() {
-  if (rolling || !physicsReady) return;
+function preSimulate(diceCount: number): DiceSimResult[] {
+  const initRotations = Array.from(
+    { length: diceCount },
+    () => new THREE.Quaternion().random() as THREE.QuaternionLike,
+  );
+  const world = backend.createWorld({
+    diceCount,
+    initRotations,
+    convexHullPoints: diceGeometryPoints,
+    worldConfig: { gravity: [0, -9.81, 0], timestep: SIMULATE_DT },
+    colliderConfig: {
+      shape: { kind: "convexHull", points: diceGeometryPoints },
+      mass: DICE_MASS,
+      restitution: DICE_RESTITUTION,
+    },
+  });
 
+  const results: (DiceSimResult | undefined)[] = Array(diceCount).fill(undefined);
+  let time = 0;
+  let transforms: BodyTransform[] = [];
+
+  while (results.some((r) => !r)) {
+    transforms = world.step();
+    time += SIMULATE_DT;
+    for (let i = 0; i < diceCount; i++) {
+      if (results[i]) continue;
+      if (world.isSleeping(i)) {
+        results[i] = {
+          initRotation: initRotations[i],
+          finalUpFace: calcFinalUpFace(transforms[i].rotation),
+          sleepTime: time,
+        };
+      }
+    }
+  }
+
+  world.dispose();
+  return results as DiceSimResult[];
+}
+
+function createSimulator(initRotations: THREE.QuaternionLike[]): IPhysicsWorld {
+  return backend.createWorld({
+    diceCount: initRotations.length,
+    initRotations,
+    convexHullPoints: diceGeometryPoints,
+    worldConfig: { gravity: [0, -9.81, 0], timestep: SIMULATE_DT },
+    colliderConfig: {
+      shape: { kind: "convexHull", points: diceGeometryPoints },
+      mass: DICE_MASS,
+      restitution: DICE_RESTITUTION,
+    },
+  });
+}
+
+function getGatherTarget(index: number): { x: number; y: number; z: number } {
+  const spacing = getGatherSpacing();
+  const col = index % GATHER_COLS;
+  const row = Math.floor(index / GATHER_COLS);
+  const totalWidth = (GATHER_COLS - 1) * spacing.x;
+  const totalDepth = (GATHER_ROWS - 1) * spacing.z;
+  return {
+    x: col * spacing.x - totalWidth / 2,
+    y: GATHER_Y,
+    z: row * spacing.z - totalDepth / 2,
+  };
+}
+
+async function startRoll() {
+  if (rollState !== "idle" && rollState !== "done") return;
+  if (!physicsReady) return;
+
+  rollState = "rolling";
   rolling = true;
   setControlsDisabled(true);
   rollButton.classList.add("is-rolling");
   status.textContent = "正在计算这次投掷…";
 
-  // Let the loading state paint before the deterministic pre-simulation runs.
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   const targets = selectors.map(({ select }) => Number(select.value));
@@ -145,11 +239,9 @@ async function startRoll() {
 
   dice.forEach((handle) => handle.dispose());
   dice = await Promise.all(
-    result.map((simulation, index) =>
-      addDice(scene, targets[index], simulation),
-    ),
+    result.map((simulation, index) => addDice(scene, targets[index], simulation)),
   );
-  simulator = simulate(result.map(({ initRotation }) => initRotation));
+  simulator = createSimulator(result.map(({ initRotation }) => initRotation));
   accumulator = 0;
   simulatedTime = 0;
   totalTime = result.reduce(
@@ -163,18 +255,15 @@ async function startRoll() {
 function finishRoll() {
   rolling = false;
   simulator = undefined;
-  setControlsDisabled(false);
-  rollButton.classList.remove("is-rolling");
-  status.textContent = `结果：${selectors
-    .map(({ select }) => RESULT_NAMES[Number(select.value)])
-    .join(" · ")}`;
+  rollState = "gathering";
+  status.textContent = "聚拢中…";
 }
 
 function animate(now: number) {
   const frameDelta = Math.min((now - previousFrame) / 1000, 0.1);
   previousFrame = now;
 
-  if (rolling && simulator) {
+  if (rollState === "rolling" && simulator) {
     accumulator += frameDelta;
     while (accumulator >= SIMULATE_DT && simulatedTime < totalTime) {
       const transforms = simulator.step();
@@ -191,6 +280,39 @@ function animate(now: number) {
 
     if (simulatedTime >= totalTime) finishRoll();
   }
+
+  if (rollState === "gathering") {
+    let allSettled = true;
+    const lerpFactor = 1 - Math.pow(0.001, frameDelta);
+
+    dice.forEach((handle, index) => {
+      const target = getGatherTarget(index);
+      const pos = handle.group.position;
+
+      pos.x += (target.x - pos.x) * lerpFactor;
+      pos.z += (target.z - pos.z) * lerpFactor;
+      pos.y += (target.y - pos.y) * lerpFactor;
+
+      if (
+        Math.abs(pos.x - target.x) > 0.01 ||
+        Math.abs(pos.z - target.z) > 0.01 ||
+        Math.abs(pos.y - target.y) > 0.01
+      ) {
+        allSettled = false;
+      }
+    });
+
+    if (allSettled) {
+      rollState = "done";
+      setControlsDisabled(false);
+      rollButton.classList.remove("is-rolling");
+      status.textContent = `结果：${selectors
+        .map(({ select }) => RESULT_NAMES[Number(select.value)])
+        .join(" · ")}`;
+    }
+  }
+
+  omniLightPivot.rotation.y += 1.2 * frameDelta;
 
   controls.update();
   renderer.render(scene, camera);
@@ -214,9 +336,11 @@ renderer.setAnimationLoop(animate);
 
 setControlsDisabled(true);
 status.textContent = "正在加载物理引擎…";
-initializePhysics()
+backend
+  .init()
   .then(() => {
     physicsReady = true;
+    rollState = "idle";
     setControlsDisabled(false);
     status.textContent = "选择结果后，点击开始投掷";
   })

@@ -12,6 +12,10 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@dice/physics-backend": ["./src/physics/rapier-backend.ts"]
+    },
 
     /* Linting */
     "strict": true,

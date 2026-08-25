@@ -239,6 +239,11 @@ select:disabled {
 }
 
 @media (max-width: 640px) {
+  #root > canvas {
+    transform: translateY(-48px);
+    height: calc(100% + 48px);
+  }
+
   .control-panel {
     top: auto;
     right: 12px;
