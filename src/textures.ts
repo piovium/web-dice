@@ -25,21 +25,40 @@ export async function getDiceMaterials(): Promise<THREE.MeshStandardMaterial[]> 
       context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
       if (i !== 7) {
         const image = new Image();
-        const { resolve, reject, promise } = Promise.withResolvers();
         image.crossOrigin = "anonymous";
-        image.src = `https://gi-tcg-assets-api-hf.guyutongxue.site/api/v4/image/${
-          i + 1
-        }`;
-        image.onload = resolve;
-        image.onerror = reject;
-        await promise;
-        context.drawImage(
-          image,
-          CANVAS_SIZE / 2 - ICON_R,
-          CANVAS_SIZE * (1 - Math.sqrt(3) / 6) - ICON_R,
-          2 * ICON_R,
-          2 * ICON_R,
-        );
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const timeout = window.setTimeout(() => {
+              image.src = "";
+              reject(new Error("Timed out loading dice icon"));
+            }, 4000);
+            image.onload = () => {
+              window.clearTimeout(timeout);
+              resolve();
+            };
+            image.onerror = () => {
+              window.clearTimeout(timeout);
+              reject(new Error("Failed to load dice icon"));
+            };
+            image.src = `https://static-data.piovium.org/api/v4/image/${
+              i + 1
+            }`;
+          });
+          context.drawImage(
+            image,
+            CANVAS_SIZE / 2 - ICON_R,
+            CANVAS_SIZE * (1 - Math.sqrt(3) / 6) - ICON_R,
+            2 * ICON_R,
+            2 * ICON_R,
+          );
+        } catch {
+          // The dice remain usable if the optional remote icons are unavailable.
+          context.fillStyle = "rgba(15, 23, 42, 0.72)";
+          context.font = "700 52px system-ui";
+          context.textAlign = "center";
+          context.textBaseline = "middle";
+          context.fillText(String(i + 1), CANVAS_SIZE / 2, CANVAS_SIZE / 2);
+        }
       }
       const texture = new THREE.CanvasTexture(canvas);
       const material = new THREE.MeshStandardMaterial({

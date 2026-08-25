@@ -15,14 +15,27 @@ export function addChessboard(scene: THREE.Scene) {
       BOUNDARY_THICKNESS,
       CHESSBOARD_WIDTH,
     ),
-    new THREE.MeshStandardMaterial({ color: "#f0fdf4" }),
+    new THREE.MeshStandardMaterial({
+      color: "#0f172a",
+      roughness: 0.72,
+      metalness: 0.08,
+    }),
   );
   floorMesh.receiveShadow = true;
   floorMesh.position.y = -BOUNDARY_THICKNESS / 2;
   scene.add(floorMesh);
+
+  const grid = new THREE.GridHelper(
+    Math.min(CHESSBOARD_LENGTH, CHESSBOARD_WIDTH),
+    12,
+    "#334155",
+    "#1e293b",
+  );
+  grid.position.y = 0.006;
+  scene.add(grid);
 }
 
-const diceMaterials = await getDiceMaterials();
+const diceMaterialsPromise = getDiceMaterials();
 
 // 将卦限编码(0-7)转换为方向向量
 function octantToVector(octant: number): THREE.Vector3 {
@@ -145,11 +158,12 @@ function getOctahedralRotation(from: number, to: number): THREE.Quaternion {
   throw new Error(`No octahedral rotation from ${from} to ${to}`);
 }
 
-export function addDice(
+export async function addDice(
   scene: THREE.Scene,
   targetColor: number,
   preSimulate: SimulateResult,
-): THREE.Group {
+): Promise<DiceHandle> {
+  const diceMaterials = await diceMaterialsPromise;
   const targetFace = [6, 3, 1, 0, 2, 5, 4, 7][targetColor];
   const { finalUpFace, sleepTime } = preSimulate;
 
@@ -168,20 +182,30 @@ export function addDice(
 
   diceGroup.add(diceMesh);
 
-  // 高亮：在骰子即将停下前2秒，让朝上的面自发光
-  setTimeout(
-    () => {
-      const materials = diceMesh.material;
-      const oldMat = materials[targetColor];
-      const mat = oldMat.clone();
-      mat.emissive.set(DICE_COLORS[targetColor]);
-      mat.needsUpdate = true;
-      materials[targetColor] = mat;
-      oldMat.dispose();
-    },
-    sleepTime * 1000 - 2000,
-  );
-
   scene.add(diceGroup);
-  return diceGroup;
+  let isHighlighted = false;
+
+  return {
+    group: diceGroup,
+    highlightAt: Math.max(0, sleepTime - 2),
+    setHighlighted() {
+      if (isHighlighted) return;
+      isHighlighted = true;
+      const material = diceMesh.material[targetColor];
+      material.emissive.set(DICE_COLORS[targetColor]);
+      material.emissiveIntensity = 0.42;
+      material.needsUpdate = true;
+    },
+    dispose() {
+      scene.remove(diceGroup);
+      for (const material of diceMesh.material) material.dispose();
+    },
+  };
+}
+
+export interface DiceHandle {
+  group: THREE.Group;
+  highlightAt: number;
+  setHighlighted: () => void;
+  dispose: () => void;
 }
