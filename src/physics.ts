@@ -1,4 +1,4 @@
-import RAPIER from "@dimforge/rapier3d";
+import RAPIER from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
 import {
   BOUNDARY_HEIGHT,
@@ -13,6 +13,13 @@ import {
 import { diceGeometryPoints } from "./geometries";
 
 const gravity = new RAPIER.Vector3(0.0, -9.81, 0.0);
+
+let physicsInitialization: Promise<void> | undefined;
+
+export function initializePhysics() {
+  physicsInitialization ??= RAPIER.init();
+  return physicsInitialization;
+}
 
 function setupFloor(world: RAPIER.World) {
   const floorBody = world.createRigidBody(

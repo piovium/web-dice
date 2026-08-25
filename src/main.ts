@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { SIMULATE_DT } from "./config";
-import { preSimulate, simulate } from "./physics";
+import { initializePhysics, preSimulate, simulate } from "./physics";
 import { addChessboard, addDice, type DiceHandle } from "./setup";
 import { DICE_COLORS } from "./textures";
 
@@ -83,6 +83,7 @@ let accumulator = 0;
 let simulatedTime = 0;
 let totalTime = 0;
 let rolling = false;
+let physicsReady = false;
 let previousFrame = performance.now();
 
 function createResultSelectors() {
@@ -129,7 +130,7 @@ function setControlsDisabled(disabled: boolean) {
 }
 
 async function startRoll() {
-  if (rolling) return;
+  if (rolling || !physicsReady) return;
 
   rolling = true;
   setControlsDisabled(true);
@@ -210,3 +211,16 @@ omniButton.addEventListener("click", () => {
 });
 
 renderer.setAnimationLoop(animate);
+
+setControlsDisabled(true);
+status.textContent = "正在加载物理引擎…";
+initializePhysics()
+  .then(() => {
+    physicsReady = true;
+    setControlsDisabled(false);
+    status.textContent = "选择结果后，点击开始投掷";
+  })
+  .catch((error: unknown) => {
+    console.error("Failed to initialize the physics engine", error);
+    status.textContent = "物理引擎加载失败，请刷新页面重试";
+  });
