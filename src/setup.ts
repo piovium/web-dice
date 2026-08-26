@@ -210,7 +210,7 @@ export async function addDice(
       isHighlighted = true;
       const material = diceMesh.material[targetColor];
       material.uniforms.uEmissiveIntensity.value = 0.9;
-      material.uniforms.uBrightness.value = 1.35;
+      material.uniforms.uBrightness.value = targetColor === 7 ? 1.1 : 1.35;
     },
     dispose() {
       scene.remove(diceGroup);

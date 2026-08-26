@@ -9,13 +9,19 @@ export function diceInitPosition(
   index: number,
   total: number,
 ): { x: number; z: number } {
-  const diceInitCols = Math.min(total, 4);
-  const diceInitRows = Math.ceil(total / diceInitCols);
-  const diceColsGap = 3;
-  const diceRowsGap = 4;
+  const cols = Math.min(total, 4);
+  const rows = Math.ceil(total / cols);
+
+  // 让初始位置在棋盘范围内，留出墙边距
+  const margin = 1.2;
+  const availableX = Math.max(0.1, CHESSBOARD_LENGTH - margin * 2);
+  const availableZ = Math.max(0.1, CHESSBOARD_WIDTH - margin * 2);
+  const gapX = cols > 1 ? availableX / (cols - 1) : 0;
+  const gapZ = rows > 1 ? availableZ / (rows - 1) : 0;
+
   return {
-    x: ((index % diceInitCols) - (diceInitCols - 1) / 2) * diceColsGap,
-    z: (Math.floor(index / diceInitCols) - (diceInitRows - 1) / 2) * diceRowsGap,
+    x: ((index % cols) - (cols - 1) / 2) * gapX,
+    z: (Math.floor(index / cols) - (rows - 1) / 2) * gapZ,
   };
 }
 

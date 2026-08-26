@@ -9,7 +9,11 @@ const uvLeft = (1 - Math.sqrt(3) / 2) / 2;
 const uvRight = 1 - uvLeft;
 
 function isPoleVertex(x: number, y: number, z: number): boolean {
-  return Math.abs(Math.abs(y) - 1) < 0.01 && Math.abs(x) < 0.01 && Math.abs(z) < 0.01;
+  return (
+    Math.abs(Math.abs(y) - DICE_SIZE) < 0.01 &&
+    Math.abs(x) < 0.01 &&
+    Math.abs(z) < 0.01
+  );
 }
 
 export const diceGeometry = new THREE.OctahedronGeometry(DICE_SIZE);

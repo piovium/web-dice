@@ -1,5 +1,11 @@
-export const CHESSBOARD_LENGTH = 18;
-export const CHESSBOARD_WIDTH = 12;
+export let CHESSBOARD_LENGTH = 18;
+export let CHESSBOARD_WIDTH = 12;
+
+export function setChessboardSize(length: number, width: number) {
+  CHESSBOARD_LENGTH = length;
+  CHESSBOARD_WIDTH = width;
+}
+
 export const BOUNDARY_THICKNESS = 0.25;
 export const BOUNDARY_HEIGHT = 20;
 

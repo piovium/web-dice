@@ -4,8 +4,19 @@ import debounce from "debounce";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-import { SIMULATE_DT, DICE_MASS, DICE_RESTITUTION } from "./config";
-import { GATHER_COLS, GATHER_ROWS, GATHER_SPACING_X, GATHER_SPACING_Z, GATHER_Y } from "./config";
+import {
+  SIMULATE_DT,
+  DICE_MASS,
+  DICE_RESTITUTION,
+  setChessboardSize,
+} from "./config";
+import {
+  GATHER_COLS,
+  GATHER_ROWS,
+  GATHER_SPACING_X,
+  GATHER_SPACING_Z,
+  GATHER_Y,
+} from "./config";
 import { diceGeometryPoints } from "./geometries";
 import { PhysicsBackend } from "@dice/physics-backend";
 import { calcFinalUpFace, diceInitPosition } from "./physics/shared";
@@ -51,7 +62,7 @@ scene.add(rimLight);
 const ambientLight = new THREE.AmbientLight("#bfdbfe", 1.3);
 scene.add(ambientLight);
 
-// 万能骰中心图标右下角的粉色旋转光源
+// 粉色旋转点光源：绕场景转圈，给骰子表面增加动态粉色反光
 const OMNI_LIGHT_COLOR = new THREE.Color("rgb(252, 172, 252)");
 const omniLight = new THREE.PointLight(OMNI_LIGHT_COLOR, 80, 16);
 const omniLightPivot = new THREE.Group();
@@ -67,6 +78,47 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.set(0, 22, 9);
 camera.lookAt(0, 0, 0);
+
+// 根据当前相机视角计算 y=0 平面上可见的世界范围，让碰撞盒刚好等于屏幕可视区域
+function computeVisibleWorldBoundsAtY(targetY: number) {
+  camera.updateMatrixWorld();
+  camera.updateProjectionMatrix();
+
+  const corners = [
+    new THREE.Vector3(-1, 1, 0.5),
+    new THREE.Vector3(1, 1, 0.5),
+    new THREE.Vector3(-1, -1, 0.5),
+    new THREE.Vector3(1, -1, 0.5),
+  ];
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+
+  for (const ndc of corners) {
+    const worldPos = ndc.clone().unproject(camera);
+    const dir = worldPos.sub(camera.position).normalize();
+    const t = (targetY - camera.position.y) / dir.y;
+    if (t > 0) {
+      const p = camera.position.clone().add(dir.multiplyScalar(t));
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minZ = Math.min(minZ, p.z);
+      maxZ = Math.max(maxZ, p.z);
+    }
+  }
+
+  return { minX, maxX, minZ, maxZ };
+}
+
+const bounds = computeVisibleWorldBoundsAtY(0);
+const visibleWidth = bounds.maxX - bounds.minX;
+const margin = visibleWidth * 0.05;
+const boardSize = Math.max(4, visibleWidth - margin * 2);
+
+// 把棋盘设为正方形（高度 = 宽度），这样不会占满整个屏幕高度，底部自然留出面板空间
+setChessboardSize(boardSize, boardSize);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));

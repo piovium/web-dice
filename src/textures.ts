@@ -13,7 +13,7 @@ export const DICE_COLORS = [
 ];
 
 const CANVAS_SIZE = 128;
-const BG_SIZE = CANVAS_SIZE * 0.9;
+const BG_SIZE = CANVAS_SIZE * 1;
 const SYMBOL_SIZE = CANVAS_SIZE * 0.3;
 
 // 背景图标（完整面背景，含渐变/边框）

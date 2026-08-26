@@ -240,8 +240,8 @@ select:disabled {
 
 @media (max-width: 640px) {
   #root > canvas {
-    transform: translateY(-48px);
-    height: calc(100% + 48px);
+    transform: translateY(-180px);
+    height: calc(100% + 180px);
   }
 
   .control-panel {

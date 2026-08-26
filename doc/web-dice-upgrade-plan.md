@@ -725,7 +725,7 @@ function simulate(initRotations: THREE.QuaternionLike[]): IPhysicsWorld {
 
 ## 六、图标资源（从 gi-web 复制本地加载）
 
-小红书小工具不能请求外部 CDN，因此把 `F:\workspace\wechat\gi-web\public\assets\media\` 里的 8 枚骰子图标 webp 复制到本项目的 `minitool/assets/dice/`：
+小红书小工具不能请求外部 CDN，因此把 8 枚骰子图标 webp 复制到本项目的 `minitool/assets/dice/`：
 
 | 元素 | gi-web 文件名 | 复制后路径 |
 |------|---------------|------------|
