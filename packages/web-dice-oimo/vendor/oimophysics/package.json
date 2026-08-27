@@ -1,0 +1,28 @@
+{
+  "name": "oimophysics",
+  "version": "1.2.5",
+  "description": "A lightweight 3D physics engine.",
+  "type": "module",
+  "main": "./bin/js_modules/OimoPhysics.js",
+  "types": "./bin/js_modules/OimoPhysics.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saharan/OimoPhysics.git"
+  },
+  "keywords": [
+    "oimo",
+    "physics",
+    "oimophysics",
+    "oimo.js"
+  ],
+  "author": "saharan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/saharan/OimoPhysics/issues"
+  },
+  "homepage": "https://github.com/saharan/OimoPhysics#readme"
+}

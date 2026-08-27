@@ -1,23 +1,21 @@
 import { cp, readdir, rm, readFile, rename } from "fs/promises";
 import { createWriteStream } from "fs";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import { ZipArchive } from "archiver";
 
-const root = resolve(process.cwd());
-const dist = resolve(root, "dist-minitool");
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const appDir = resolve(root, "apps", "minitool");
+const dist = resolve(appDir, "dist-minitool");
 const outZip = resolve(root, "dice-minitool.zip");
 
 async function main() {
   // 1. 复制小红书小工具入口 HTML，并改名为 index.html
-  await cp(resolve(root, "minitool/index.html"), resolve(dist, "index.html"), {
+  await cp(resolve(appDir, "index.html"), resolve(dist, "index.html"), {
     force: true,
   });
 
-  // 2. 复制本地静态资源（骰子图标等）
-  await cp(resolve(root, "minitool/assets"), resolve(dist, "assets"), {
-    recursive: true,
-    force: true,
-  });
+  // 2. 骰面图标已由 web-dice-oimo 包内联为 data URL，无需再拷贝 assets
 
   // 3. 整理构建产物：删除垃圾文件，并把 CSS 重命名为 style.css
   const files = await readdir(dist, { recursive: true, withFileTypes: true });

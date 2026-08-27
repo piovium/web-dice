@@ -1,0 +1,32 @@
+web-dice 拆包实施临时 todolist（每完成一项立即更新此文件）
+============================================================
+状态标记：[ ] 未开始  [~] 进行中  [x] 已完成  [!] 受阻
+
+[x] T0 建立 monorepo 骨架：pnpm-workspace.yaml、packages/{web-dice-core,web-dice,web-dice-oimo}、apps/{web,minitool}
+[x] T1 core：config 去全局化（DiceWorldConfig + 默认值，boardLength/boardWidth 实例级）
+[x] T1 core：physics/types.ts、physics/shared.ts（diceInitPosition(cfg,...) 传参化、scaleHullPoints）
+[x] T1 core：geometry.ts / shaders / board.ts / dice.ts 迁移（棋盘支持桌面贴图、骰子支持 scale、setTableTexture）
+[x] T1 core：textures.ts 参数化（DiceFaceAssets 注入，单张失败降级纯色面）
+[x] T1 core：renderer.ts（DiceRenderer：状态机、2 行聚拢、n>8 缩放 sqrt(8/n)、全万能彩蛋 omni 光）
+[x] T1 core：index.ts 导出 + BoardSize 解析（number | [l,w] | "LxW"，单位=世界单位）+ validateResults
+[x] T2 packages/web-dice：RapierBackend 传参化 + CDN 默认贴图（占位 URL 待换）+ package.json + vite lib 构建 + dts
+[x] T2 packages/web-dice-oimo：OimoBackend 传参化 + 内联 data URL 贴图 + package.json + vite lib 构建 + dts
+    - oimophysics 已 vendor 至 packages/web-dice-oimo/vendor/oimophysics（依赖改为 file:./vendor/oimophysics，
+      规避 git 代理不可用/不稳定问题）
+[x] T3 apps/web：index.html + src/main.ts UI 壳改用 "web-dice" 包 API（顶层 await，build target=esnext）
+[x] T3 apps/minitool：index.html + src/main.ts UI 壳改用 "web-dice-oimo" 包 API（IIFE 不支持 TLA，改为 async init()）
+[x] T3 构建：apps/web vite.config.ts（wasm 插件）、apps/minitool IIFE 构建、scripts/package-minitool.mjs 路径适配（script 定位改为 import.meta.url）
+[x] T4 pnpm install + 三条构建链全部跑通：
+    - pnpm build:packages（core 20.9kB / web-dice 4.4kB / web-dice-oimo 5.1kB，均含 d.ts）
+    - pnpm build（apps/web，dist 产物正常，wasm 后端）
+    - pnpm build:minitool（IIFE app.js 1.16MB，禁用模式校验通过，dice-minitool.zip 生成）
+[x] T5 清理根目录旧 src/、旧 index.html、旧 vite 配置、旧 tsconfig、旧 minitool/；
+    .github/workflows/deploy-pages.yml 更新为 build:packages + build，产物路径 apps/web/dist
+[x] T6 最终回归：三条构建链从根目录一键重跑通过；.gitignore 已覆盖 packages/apps 的 dist 产物
+
+备注 / 移交事项（非本次范围）：
+- packages/web-dice/src/index.ts 的 CDN_BASE 为占位常量，上线前需替换为真实骰面图源
+  （调用方也可用 faceAssets 选项覆盖）；加载失败已做纯色面降级。
+- npm 发布前：用 changesets 同步发版 web-dice 与 web-dice-oimo（@dice/web-dice-core 先发）；
+  发布前建议 `pnpm pack` 检查 files/types 字段。
+- 当前状态：全部完成（2026-08-27）

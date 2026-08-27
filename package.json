@@ -1,26 +1,17 @@
 {
-  "name": "dice",
+  "name": "web-dice-monorepo",
   "private": true,
   "version": "0.0.0",
   "packageManager": "pnpm@10.17.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "build:minitool": "vite build --config vite.config.minitool.ts && node scripts/package-minitool.mjs"
+    "build:packages": "pnpm --filter web-dice-core build && pnpm --filter web-dice build && pnpm --filter web-dice-oimo build",
+    "dev": "pnpm --filter web-app dev",
+    "build": "pnpm --filter web-app build",
+    "build:minitool": "pnpm --filter minitool-app build",
+    "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
-    "@types/three": "^0.173.0",
-    "archiver": "^8.0.0",
-    "typescript": "~5.7.2",
-    "vite": "^6.2.0",
-    "vite-plugin-wasm": "^3.4.1"
-  },
-  "dependencies": {
-    "@dimforge/rapier3d-compat": "^0.14.0",
-    "debounce": "^2.2.0",
-    "oimophysics": "git+https://github.com/saharan/OimoPhysics.git",
-    "three": "^0.174.0"
+    "archiver": "^8.0.0"
   }
 }
