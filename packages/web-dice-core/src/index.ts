@@ -1,14 +1,14 @@
 import { MIN_DICE_COUNT, MAX_DICE_COUNT } from "./renderer";
 
 export { DiceRenderer, MIN_DICE_COUNT, MAX_DICE_COUNT } from "./renderer";
-export type { DiceRendererOptions } from "./renderer";
+export type { DiceRendererOptions, DiceRoundRecord } from "./renderer";
 export * from "./config";
 export * from "./textures";
 export * from "./physics/types";
 export { diceInitPosition, calcFinalUpFace, scaleHullPoints } from "./physics/shared";
 export { diceGeometry, diceGeometryPoints } from "./geometry";
 export { addChessboard } from "./board";
-export { addDice } from "./dice";
+export { addDice, deriveUpFaceElement } from "./dice";
 export type { DiceHandle } from "./dice";
 
 /** 七圣骰子面索引 0..7 的中英双语名称 */

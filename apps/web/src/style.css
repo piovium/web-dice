@@ -163,6 +163,27 @@ h1 {
   color: #dbeafe;
 }
 
+.rounds-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.62);
+  font-size: 11px;
+}
+
+.rounds-option select {
+  margin: 0;
+  padding: 0 4px;
+  width: auto;
+  color: #dbeafe;
+  background: transparent;
+  font-size: 11px;
+}
+
 .roll-button {
   position: relative;
   width: 100%;

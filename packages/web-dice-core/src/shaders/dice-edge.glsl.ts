@@ -42,10 +42,12 @@ export const diceEdgeFragmentShader = /* glsl */ `
     float edgeFactor = min(min(vBarycentric.x, vBarycentric.y), vBarycentric.z);
     float edge = step(edgeFactor, uEdgeWidth);
 
-    // 实心金字塔型顶点帽：只在非极点（赤道顶点）画实心三角帽，极点无帽
-    float cap0 = (1.0 - vIsPole.x) * step(1.0 - vBarycentric.x, uVertexWidth);
-    float cap1 = (1.0 - vIsPole.y) * step(1.0 - vBarycentric.y, uVertexWidth);
-    float cap2 = (1.0 - vIsPole.z) * step(1.0 - vBarycentric.z, uVertexWidth);
+    // 实心金字塔型顶点帽：只在非极点（赤道顶点）画实心三角帽，极点无帽。
+    // vIsPole 为插值值（极点面内 = 顶点重心坐标），帽区域内 ≥ 0.7，
+    // 用硬阈值整体关断；原 (1 - vIsPole) 渐变式抑制会在极点周围留下淡金残影
+    float cap0 = step(vIsPole.x, 0.5) * step(1.0 - vBarycentric.x, uVertexWidth);
+    float cap1 = step(vIsPole.y, 0.5) * step(1.0 - vBarycentric.y, uVertexWidth);
+    float cap2 = step(vIsPole.z, 0.5) * step(1.0 - vBarycentric.z, uVertexWidth);
     float vertex = max(max(cap0, cap1), cap2);
 
     float goldFactor = clamp(max(edge, vertex) * uEdgeIntensity, 0.0, 1.0);

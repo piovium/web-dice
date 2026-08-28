@@ -12,6 +12,9 @@ const rollButton = document.querySelector<HTMLButtonElement>("#roll-button")!;
 const randomButton =
   document.querySelector<HTMLButtonElement>("#random-button")!;
 const omniButton = document.querySelector<HTMLButtonElement>("#omni-button")!;
+const roundsSelect = document.querySelector<HTMLSelectElement>(
+  "#rounds-select",
+)!;
 const status = document.getElementById("roll-status")!;
 
 const DICE_COUNT = 8;
@@ -64,6 +67,7 @@ function setControlsDisabled(disabled: boolean) {
   rollButton.disabled = disabled;
   randomButton.disabled = disabled;
   omniButton.disabled = disabled;
+  roundsSelect.disabled = disabled;
   selectors.forEach(({ select }) => (select.disabled = disabled));
 }
 
@@ -75,7 +79,10 @@ status.textContent = "正在加载物理引擎…";
 const dice = await WebDice.create({
   container: root,
   rotatable: true, // demo 需要手势交互；组件默认 false（不响应手势）
-  diceSize: 1.0, // 桌面端大一点
+  diceSize: 0.8, // 桌面端适中尺寸：过大时重投停靠列会太长且间隙显大
+  // 桌面端显式长方形棋盘：默认按屏宽推导的正方形会超出屏幕高度且显得空旷，
+  // 12×8 世界单位保证棋盘完整可见，初始投掷散点也不会贴到上下边缘
+  boardSize: [12, 8] as const,
   initialResults: Array.from({ length: DICE_COUNT }, (_, i) => i),
 });
 
@@ -85,9 +92,19 @@ status.textContent = "选择结果后，点击开始投掷";
 rollButton.addEventListener("click", async () => {
   setControlsDisabled(true);
   rollButton.classList.add("is-rolling");
-  status.textContent = "正在计算这次投掷…";
+  const rounds = Number(roundsSelect.value);
+  status.textContent =
+    rounds > 1
+      ? "多轮模式：聚拢后单击骰子选中重投，或点击按钮跳过"
+      : "正在计算这次投掷…";
   try {
-    const faces = await dice.roll(getSelections());
+    const faces = await dice.roll(getSelections(), rounds, (record) => {
+      status.textContent = `第 ${record.round} 轮完成${
+        record.rerolledIndices.length > 0
+          ? `（重投 ${record.rerolledIndices.length} 枚）`
+          : ""
+      }：${record.faces.map((face) => ELEMENT_NAMES_ZH[face]).join(" · ")}`;
+    });
     status.textContent = `结果：${faces
       .map((face) => ELEMENT_NAMES_ZH[face])
       .join(" · ")}`;

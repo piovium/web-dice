@@ -19,6 +19,13 @@ export interface BodyTransform {
   rotation: THREE.Quaternion;
 }
 
+/** 轻量三维向量（避免与 three 实例绑定） */
+export interface Vec3Like {
+  x: number;
+  y: number;
+  z: number;
+}
+
 export interface DiceSimResult {
   initRotation: THREE.QuaternionLike;
   finalUpFace: number;
@@ -30,6 +37,11 @@ export interface IPhysicsBackend {
   createWorld(options: {
     diceCount: number;
     initRotations: THREE.QuaternionLike[];
+    /** 覆盖默认初始散布位置（重投"原地下落"用）；y 为下落起始高度。
+     *  缺省：diceInitPosition + board.diceInitHeight */
+    initPositions?: readonly Vec3Like[];
+    /** 初始角速度（rad/s），缺省 0（静止下落） */
+    angularVelocities?: readonly Vec3Like[];
     /** 已按 diceScale 预缩放的凸包顶点（x,y,z 交错） */
     convexHullPoints: Float32Array;
     /** 骰子缩放系数（n>8 时 <1；用于体积/密度换算） */

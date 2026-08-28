@@ -23,6 +23,40 @@ web-dice 拆包实施临时 todolist（每完成一项立即更新此文件）
 [x] T5 清理根目录旧 src/、旧 index.html、旧 vite 配置、旧 tsconfig、旧 minitool/；
     .github/workflows/deploy-pages.yml 更新为 build:packages + build，产物路径 apps/web/dist
 [x] T6 最终回归：三条构建链从根目录一键重跑通过；.gitignore 已覆盖 packages/apps 的 dist 产物
+[x] T7 npm 包接口：roll(results?, rounds?) 指定掷骰轮数（默认 1 轮 = 原有行为）
+    - core/renderer：状态机扩展 selecting / reroll-parking / reroll-falling；多轮在每轮聚拢后
+      进入重投选择：单击骰子切换选中，选中效果为反转外壳描边（放大 1.08 倍背面渲染的
+      MeshBasic 外壳，#ffe98f），任何视角下紧贴轮廓一圈紧凑淡黄高光、不改动面材质；
+      DOM 按钮无选中时显示"确认跳过后续所有重投轮次"、有选中时显示"重新投掷"
+    - core/renderer：重投 = 未选中骰平移至棋盘右上角停靠 + 选中骰保持朝向加随机角速度
+      原地下落（实时物理，不用第一轮记录重放），全部 sleep（12s 保底）后按静止姿态 +
+      校正旋转推导实际朝上元素（deriveUpFaceElement）并重新聚拢进入下一轮（如有），
+      全部轮次完成或跳过后 roll() 才 resolve 最终结果
+    - core/dice：DiceHandle 增加 setFaceGlow / setSelected；core/physics/types：createWorld
+      增加 initPositions / angularVelocities（两个 backend 同步实现）
+    - 两公开包 API 同步（web-dice / web-dice-oimo）；apps/web 增加掷骰轮数选择演示
+    - 验证：pnpm typecheck 全绿；build:packages / build / build:minitool（禁用模式）通过；
+      deriveUpFaceElement 数学一致性 Node 断言 16448 通过（2026-08-28）
+[x] T8 npm 包接口：roll 增加可选 onRoundComplete 每轮记录回调（第 3 参，纯记录用途）
+    - core/renderer：DiceRoundRecord { round, faces, rerolledIndices }，每轮聚拢落定、
+      进入选择阶段前触发；调用方回调异常经 setTimeout 异步重抛，不打断渲染循环；
+      主结果 Promise<number[]> 签名不变；已回调轮数 < rounds 即表示中途跳过
+    - 两公开包同步导出 DiceRoundRecord 类型并透传；apps/web 演示回调展示每轮结果
+    - 验证：build:packages → typecheck → build → build:minitool 全绿（2026-08-28）
+[x] T9 聚拢排序（默认开启，不可关闭）：万能(7)最优先，其余元素升序（同面按骰子原索引稳定排序）
+    - core/renderer：beginGathering() 每次进入聚拢（首轮/每次重投后）重算 gatherSlotOfIndex
+      槽位映射，聚拢动画按槽位就位；resolve 值与 DiceRoundRecord.faces 同步按该顺序输出
+      （不再对应投掷时的骰子传入顺序，JSDoc 已注明；rerolledIndices 仍为用户点选的骰子原始索引）
+    - 验证：build:packages → typecheck → build → build:minitool 全绿（2026-08-28）
+[x] T10 apps/minitool：面板空间有限，写死 2 轮（ROUNDS=2）接入多轮流程 +
+      onRoundComplete 每轮状态展示；build:minitool 禁用模式回归通过（2026-08-28）
+[x] T11 修正项：决策按钮锚定 canvas 实际盒子（部署页容器=棋盘+面板，锚容器必偏），
+      位置=canvas 中心 + 1.5 聚拢行距，按钮带 web-dice-decision-button class 可被宿主 CSS 覆盖；
+      聚拢时同步摆平 sleep 后的残余倾斜（computeFlattenTarget 最短弧转正，
+      20000 例断言：结果面不变、面法线精确朝上、derive 一致）（2026-08-28）
+[x] T12 web-dice 包骰面资源补全：骰面背景（8 张 webp）+ 万能骰图标（omni.svg）
+      改为包内内联 data URL（?inline），中心元素符号仍走 CDN；apps/web 棋盘改
+      12×8、默认轮数 2、diceSize 0.8（2026-08-28）
 
 备注 / 移交事项（非本次范围）：
 - packages/web-dice/src/index.ts 的 CDN_BASE 为占位常量，上线前需替换为真实骰面图源

@@ -12,6 +12,8 @@ const omniButton = document.querySelector<HTMLButtonElement>("#omni-button")!;
 const status = document.getElementById("roll-status")!;
 
 const DICE_COUNT = 8;
+/** 小红书面板空间有限：写死 2 轮（首轮聚拢后可点选骰子重投一次，或按钮跳过） */
+const ROUNDS = 2;
 
 type Selectors = { label: HTMLLabelElement; select: HTMLSelectElement };
 let selectors: Selectors[] = [];
@@ -137,9 +139,15 @@ rollButton.addEventListener("click", async () => {
   if (!dice) return;
   setControlsDisabled(true);
   rollButton.classList.add("is-rolling");
-  status.textContent = "正在计算这次投掷…";
+  status.textContent = "多轮模式：聚拢后单击骰子选中重投，或点击按钮跳过";
   try {
-    const faces = await dice.roll(getSelections());
+    const faces = await dice.roll(getSelections(), ROUNDS, (record) => {
+      status.textContent = `第 ${record.round} 轮完成${
+        record.rerolledIndices.length > 0
+          ? `（重投 ${record.rerolledIndices.length} 枚）`
+          : ""
+      }：${record.faces.map((face) => ELEMENT_NAMES_ZH[face]).join(" · ")}`;
+    });
     status.textContent = `结果：${faces
       .map((face) => ELEMENT_NAMES_ZH[face])
       .join(" · ")}`;

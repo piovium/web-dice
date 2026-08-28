@@ -22,6 +22,8 @@ export class PhysicsBackend implements IPhysicsBackend {
     const {
       diceCount,
       initRotations,
+      initPositions,
+      angularVelocities,
       convexHullPoints,
       worldConfig,
       colliderConfig,
@@ -78,12 +80,27 @@ export class PhysicsBackend implements IPhysicsBackend {
 
     const bodies: RAPIER.RigidBody[] = [];
     for (let i = 0; i < diceCount; i++) {
-      const { x, z } = diceInitPosition(board, i, diceCount);
+      const fallback = diceInitPosition(board, i, diceCount);
+      const init = initPositions?.[i];
+      const x = init ? init.x : fallback.x;
+      const y = init ? init.y : board.diceInitHeight;
+      const z = init ? init.z : fallback.z;
       const body = world.createRigidBody(
         RAPIER.RigidBodyDesc.dynamic()
-          .setTranslation(x, board.diceInitHeight, z)
+          .setTranslation(x, y, z)
           .setRotation(initRotations[i]),
       );
+      const angularVelocity = angularVelocities?.[i];
+      if (angularVelocity) {
+        body.setAngvel(
+          new RAPIER.Vector3(
+            angularVelocity.x,
+            angularVelocity.y,
+            angularVelocity.z,
+          ),
+          true,
+        );
+      }
       const shape = RAPIER.ColliderDesc.convexHull(convexHullPoints)!;
       shape.setMass(colliderConfig.mass);
       shape.setRestitution(colliderConfig.restitution);

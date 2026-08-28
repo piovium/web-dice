@@ -17,6 +17,8 @@ export class PhysicsBackend implements IPhysicsBackend {
     const {
       diceCount,
       initRotations,
+      initPositions,
+      angularVelocities,
       convexHullPoints,
       worldConfig,
       colliderConfig,
@@ -95,7 +97,11 @@ export class PhysicsBackend implements IPhysicsBackend {
     // 骰子
     const bodies: OIMO.dynamics.rigidbody.RigidBody[] = [];
     for (let i = 0; i < diceCount; i++) {
-      const { x, z } = diceInitPosition(board, i, diceCount);
+      const fallback = diceInitPosition(board, i, diceCount);
+      const init = initPositions?.[i];
+      const x = init ? init.x : fallback.x;
+      const y = init ? init.y : board.diceInitHeight;
+      const z = init ? init.z : fallback.z;
       const rot = initRotations[i];
 
       const config = new OIMO.dynamics.rigidbody.RigidBodyConfig();
@@ -112,6 +118,17 @@ export class PhysicsBackend implements IPhysicsBackend {
         "XYZ",
       );
       body.setRotationXyz(new OIMO.common.Vec3(euler.x, euler.y, euler.z));
+
+      const angularVelocity = angularVelocities?.[i];
+      if (angularVelocity) {
+        body.setAngularVelocity(
+          new OIMO.common.Vec3(
+            angularVelocity.x,
+            angularVelocity.y,
+            angularVelocity.z,
+          ),
+        );
+      }
 
       const shapeConfig = new OIMO.dynamics.rigidbody.ShapeConfig();
       shapeConfig.geometry = new OIMO.collision.geometry.ConvexHullGeometry(
