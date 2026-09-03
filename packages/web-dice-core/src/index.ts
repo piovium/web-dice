@@ -8,6 +8,7 @@ export * from "./physics/types";
 export { diceInitPosition, calcFinalUpFace, scaleHullPoints } from "./physics/shared";
 export { diceGeometry, diceGeometryPoints } from "./geometry";
 export { addChessboard } from "./board";
+export type { ChessboardOptions } from "./board";
 export { addDice, deriveUpFaceElement } from "./dice";
 export type { DiceHandle } from "./dice";
 

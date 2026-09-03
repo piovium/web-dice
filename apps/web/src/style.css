@@ -163,7 +163,7 @@ h1 {
   color: #dbeafe;
 }
 
-.rounds-option {
+.select-option {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -175,7 +175,7 @@ h1 {
   font-size: 11px;
 }
 
-.rounds-option select {
+.select-option select {
   margin: 0;
   padding: 0 4px;
   width: auto;

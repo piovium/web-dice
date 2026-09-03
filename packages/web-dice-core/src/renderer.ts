@@ -35,6 +35,19 @@ import { getDiceTextures, type DiceFaceAssets } from "./textures";
 export const MIN_DICE_COUNT = 1;
 export const MAX_DICE_COUNT = 16;
 
+/** 投掷倍速范围：1–10 的整数 */
+export const MIN_SPEED = 1;
+export const MAX_SPEED = 10;
+
+/** 校验投掷倍速：1–10 的整数，非法值抛 RangeError */
+function validateSpeed(speed: number): void {
+  if (!Number.isInteger(speed) || speed < MIN_SPEED || speed > MAX_SPEED) {
+    throw new RangeError(
+      `speed must be an integer between ${MIN_SPEED} and ${MAX_SPEED}, got ${speed}`,
+    );
+  }
+}
+
 /** 单轮投掷结束的记录（roll 的 onRoundComplete 回调参数，纯记录用途） */
 export interface DiceRoundRecord {
   /** 轮次，从 1 开始 */
@@ -55,6 +68,15 @@ export interface DiceRendererOptions {
   diceSize?: number;
   /** 手势总开关（旋转 + 缩放），默认 false */
   rotatable?: boolean;
+  /** 是否显示棋盘网格线，默认 false */
+  showGrid?: boolean;
+  /** 透明模式：canvas 背景与棋盘地板全透明（仅保留骰子投影），
+   *  供调用方把 canvas 叠在自己的页面内容上。该模式下 tableTexture 无效，默认 false */
+  transparent?: boolean;
+  /** 投掷动画倍速：1–10 的整数，默认 1（原速）。作用于投掷、聚拢、重投全流程 */
+  speed?: number;
+  /** 默认掷骰轮数（整数 ≥ 1），默认 1；roll() 未显式传 rounds 时生效 */
+  rounds?: number;
   tableTexture?: string | HTMLImageElement | HTMLCanvasElement | null;
   faceAssets: DiceFaceAssets;
 }
@@ -111,6 +133,10 @@ export class DiceRenderer {
   private diceScale = 1;
   private resizeObserver: ResizeObserver;
   private disposed = false;
+  /** 投掷动画倍速（1–10 整数），作用于 animate 的帧时长 */
+  private speed: number;
+  /** roll() 未显式传 rounds 时的默认轮数 */
+  private readonly defaultRounds: number;
 
   private activeRoll: Promise<number[]> | undefined;
   private readonly faceAssets: DiceFaceAssets;
@@ -161,8 +187,24 @@ export class DiceRenderer {
     this.board = { ...DEFAULT_WORLD_CONFIG };
     this.diceCount = 8;
 
-    this.scene.background = new THREE.Color("#070b16");
-    this.scene.fog = new THREE.Fog("#070b16", 17, 34);
+    const speed = options.speed ?? 1;
+    validateSpeed(speed);
+    this.speed = speed;
+
+    const defaultRounds = options.rounds ?? 1;
+    if (!Number.isInteger(defaultRounds) || defaultRounds < 1) {
+      throw new RangeError(
+        `rounds must be an integer >= 1, got ${defaultRounds}`,
+      );
+    }
+    this.defaultRounds = defaultRounds;
+
+    const transparent = options.transparent ?? false;
+    if (!transparent) {
+      this.scene.background = new THREE.Color("#070b16");
+      // 雾只染颜色不影响 alpha，透明模式下开启会在远处骰子边缘留下暗边，故不加
+      this.scene.fog = new THREE.Fog("#070b16", 17, 34);
+    }
 
     const spotLight = new THREE.SpotLight("#dbeafe", 180);
     spotLight.castShadow = true;
@@ -219,7 +261,8 @@ export class DiceRenderer {
     }
     this.fitView();
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: transparent });
+    if (transparent) this.renderer.setClearColor(0x000000, 0);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.shadowMap.enabled = true;
@@ -270,11 +313,11 @@ export class DiceRenderer {
     );
     this.resizeObserver.observe(container);
 
-    this.floorMaterial = addChessboard(
-      this.scene,
-      this.board,
-      options.tableTexture ?? null,
-    );
+    this.floorMaterial = addChessboard(this.scene, this.board, {
+      tableTexture: options.tableTexture ?? null,
+      showGrid: options.showGrid ?? false,
+      transparent,
+    });
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
@@ -339,7 +382,13 @@ export class DiceRenderer {
     this.controls.enableZoom = rotatable;
   }
 
-  /** 替换桌面贴图；传 null 恢复默认深色网格 */
+  /** 运行时调整投掷倍速（1–10 整数），对进行中的投掷也立即生效 */
+  setSpeed(speed: number): void {
+    validateSpeed(speed);
+    this.speed = speed;
+  }
+
+  /** 替换桌面贴图；传 null 恢复默认深色桌面。透明模式下无地板材质，为空操作 */
   setTableTexture(
     texture: string | HTMLImageElement | HTMLCanvasElement | null,
   ): void {
@@ -461,18 +510,19 @@ export class DiceRenderer {
   /**
    * 投掷并播放动画，resolve 最终各骰子朝上的面，按聚拢展示顺序排序：
    * 万能(7)最优先，其余元素升序（同面按骰子原索引稳定排序，默认行为不可关闭）。
-   * rounds > 1 时进入多轮流程：每轮聚拢后允许点选骰子重投（见 WebDice.roll 文档），
-   * 全部轮次完成或用户跳过后 resolve 最终结果。
+   * rounds 缺省用构造选项的 rounds（默认 1）；> 1 时进入多轮流程：每轮聚拢后
+   * 允许点选骰子重投（见 WebDice.roll 文档），全部轮次完成或用户跳过后 resolve 最终结果。
    */
   roll(
     targets: number[],
-    rounds = 1,
+    rounds?: number,
     onRoundComplete?: (record: DiceRoundRecord) => void,
   ): Promise<number[]> {
     if (this.disposed) return Promise.reject(new Error("DiceRenderer disposed"));
-    if (!Number.isInteger(rounds) || rounds < 1) {
+    const totalRounds = rounds ?? this.defaultRounds;
+    if (!Number.isInteger(totalRounds) || totalRounds < 1) {
       return Promise.reject(
-        new RangeError(`rounds must be an integer >= 1, got ${rounds}`),
+        new RangeError(`rounds must be an integer >= 1, got ${totalRounds}`),
       );
     }
     if (this.rollState !== "idle" && this.rollState !== "done") {
@@ -480,7 +530,7 @@ export class DiceRenderer {
       return (this.activeRoll ?? Promise.resolve([])) as Promise<number[]>;
     }
 
-    this.totalRounds = rounds;
+    this.totalRounds = totalRounds;
     this.currentRound = 1;
     this.currentFaces = targets.slice();
     this.lastRerolledIndices = [];
@@ -778,7 +828,9 @@ export class DiceRenderer {
 
   private animate(now: number): void {
     if (this.disposed) return;
-    const frameDelta = Math.min((now - this.previousFrame) / 1000, 0.1);
+    // speed 倍速：放大帧时长，物理步进、聚拢/停靠插值、彩蛋灯光随之整体加速
+    const frameDelta =
+      Math.min((now - this.previousFrame) / 1000, 0.1) * this.speed;
     this.previousFrame = now;
 
     if (this.rollState === "rolling" && this.simulator) {

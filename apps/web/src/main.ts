@@ -15,6 +15,8 @@ const omniButton = document.querySelector<HTMLButtonElement>("#omni-button")!;
 const roundsSelect = document.querySelector<HTMLSelectElement>(
   "#rounds-select",
 )!;
+const speedSelect =
+  document.querySelector<HTMLSelectElement>("#speed-select")!;
 const status = document.getElementById("roll-status")!;
 
 const DICE_COUNT = 8;
@@ -68,6 +70,7 @@ function setControlsDisabled(disabled: boolean) {
   randomButton.disabled = disabled;
   omniButton.disabled = disabled;
   roundsSelect.disabled = disabled;
+  speedSelect.disabled = disabled;
   selectors.forEach(({ select }) => (select.disabled = disabled));
 }
 
@@ -79,6 +82,7 @@ status.textContent = "正在加载物理引擎…";
 const dice = await WebDice.create({
   container: root,
   rotatable: true, // demo 需要手势交互；组件默认 false（不响应手势）
+  showGrid: true, // demo 展示棋盘网格；组件默认 false
   diceSize: 0.8, // 桌面端适中尺寸：过大时重投停靠列会太长且间隙显大
   // 桌面端显式长方形棋盘：默认按屏宽推导的正方形会超出屏幕高度且显得空旷，
   // 12×8 世界单位保证棋盘完整可见，初始投掷散点也不会贴到上下边缘
@@ -88,6 +92,11 @@ const dice = await WebDice.create({
 
 setControlsDisabled(false);
 status.textContent = "选择结果后，点击开始投掷";
+
+// 速度立即生效（对进行中的投掷同样有效）
+speedSelect.addEventListener("change", () => {
+  dice.setSpeed(Number(speedSelect.value));
+});
 
 rollButton.addEventListener("click", async () => {
   setControlsDisabled(true);
