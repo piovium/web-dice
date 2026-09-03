@@ -1,7 +1,7 @@
 import "./style.css";
 
-import { DICE_COLORS, ELEMENT_NAMES_ZH } from "web-dice-oimo";
-import { WebDice } from "web-dice-oimo";
+import { DICE_COLORS, ELEMENT_NAMES_ZH } from "gi-dice-oimo";
+import { WebDice } from "gi-dice-oimo";
 
 const root = document.getElementById("root")!;
 const options = document.getElementById("dice-options")!;

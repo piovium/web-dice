@@ -1,7 +1,7 @@
 import { oimo as OIMO } from "oimophysics";
 import * as THREE from "three";
-import type { IPhysicsBackend, IPhysicsWorld } from "web-dice-core";
-import { diceInitPosition } from "web-dice-core";
+import type { IPhysicsBackend, IPhysicsWorld } from "gi-dice-core";
+import { diceInitPosition } from "gi-dice-core";
 
 // 正八面体体积 = sqrt(2)/3 * R^3，R �?OctahedronGeometry �?radius
 const OCTAHEDRON_VOLUME = (size: number) => (Math.sqrt(2) / 3) * Math.pow(size, 3);

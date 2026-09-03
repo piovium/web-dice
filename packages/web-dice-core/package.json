@@ -1,7 +1,13 @@
 {
-  "name": "web-dice-core",
+  "name": "gi-dice-core",
   "version": "0.1.0",
-  "description": "Shared rendering engine for web-dice and web-dice-oimo packages.",
+  "description": "Shared rendering engine for gi-dice and gi-dice-oimo packages.",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/piovium/web-dice.git",
+    "directory": "packages/web-dice-core"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

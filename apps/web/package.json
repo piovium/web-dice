@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "web-dice": "workspace:*"
+    "gi-dice": "workspace:*"
   },
   "devDependencies": {
     "typescript": "~5.7.2",

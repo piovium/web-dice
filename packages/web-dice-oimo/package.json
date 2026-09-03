@@ -1,7 +1,13 @@
 {
-  "name": "web-dice-oimo",
+  "name": "gi-dice-oimo",
   "version": "0.1.0",
-  "description": "Seven-element dice rolling canvas (pure JS/OimoPhysics backend, offline inlined textures). Same API as web-dice.",
+  "description": "Seven-element dice rolling canvas (pure JS/OimoPhysics backend, offline inlined textures). Same API as gi-dice.",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/piovium/web-dice.git",
+    "directory": "packages/web-dice-oimo"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -18,9 +24,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "web-dice-core": "workspace:*",
+    "gi-dice-core": "workspace:*",
     "debounce": "^2.2.0",
-    "oimophysics": "file:./vendor/oimophysics"
+    "oimophysics": "git+https://github.com/saharan/OimoPhysics.git#234c7a4cd4b5408fc834437fb3bb1763f7c4ccce"
   },
   "peerDependencies": {
     "three": ">=0.160.0"

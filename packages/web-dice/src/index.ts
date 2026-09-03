@@ -12,7 +12,7 @@ import {
   type DiceFaceAsset,
   type DiceFaceAssets,
   type DiceRoundRecord,
-} from "web-dice-core";
+} from "gi-dice-core";
 import { PhysicsBackend } from "./rapier-backend";
 import { DEFAULT_FACE_ASSETS } from "./assets";
 

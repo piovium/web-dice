@@ -14,7 +14,7 @@ import symbol5 from "./assets/symbols/symbol-5.webp?inline";
 import symbol6 from "./assets/symbols/symbol-6.webp?inline";
 import symbol7 from "./assets/symbols/symbol-7.webp?inline";
 import omniSymbol from "./assets/symbols/omni.svg?inline";
-import type { DiceFaceAssets } from "web-dice-core";
+import type { DiceFaceAssets } from "gi-dice-core";
 
 /** 内联 data URL 贴图（离线可用，满足小红书禁外链约束�?*/
 export const INLINE_FACE_ASSETS: DiceFaceAssets = [

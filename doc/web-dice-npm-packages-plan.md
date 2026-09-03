@@ -291,7 +291,7 @@ selector 面板可基于 `ELEMENT_NAMES_ZH`/`ELEMENT_NAMES_EN` 渲染双语选�
 |------|------|------|
 | `packages/web-dice-core` | `tsc` 出 dts（不打包运行时） | `private: true`，仅 workspace 内引用；three 为 dependency |
 | `packages/web-dice` | vite lib mode（ESM）+ `vite-plugin-wasm` + `vite-plugin-dts` | three 设为 peerDependency；`@dimforge/rapier3d-compat` 为 dependency（其 wasm 以 base64 内联，无需额外 .wasm 文件，浏览器直接可用）。`package.json`：`types`/`exports`/`files` 指向 dist（含 index.d.ts） |
-| `packages/web-dice-oimo` | vite lib mode（**单文件、无 dynamic import**）+ `vite-plugin-dts` | three peer；`oimophysics` 打进 bundle 或作为 dependency 视其包质量决定（git 依赖建议打进 bundle）。同上声明 types/exports/files |
+| `packages/web-dice-oimo` | vite lib mode（**单文件、无 dynamic import**）+ `vite-plugin-dts` | three peer；`oimophysics` 为 git 依赖并 pin 到 commit `234c7a4`（即 vendor 快照对应的 1.2.5；待 npm 发布 1.2.5 后换回 registry 版本）。同上声明 types/exports/files |
 | `apps/web` | vite 普通 app 构建（保留 wasm 插件） | 根 `index.html` |
 | `apps/minitool` | vite lib IIFE（沿用现 `vite.config.minitool.ts` 思路） | 产物过 `package-minitool.mjs` 禁用模式校验 |
 

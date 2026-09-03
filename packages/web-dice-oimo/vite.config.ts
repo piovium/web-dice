@@ -15,7 +15,7 @@ export default defineConfig({
       fileName: "index",
     },
     rollupOptions: {
-      external: [/^three/, /^web-dice-core/, /^oimophysics/],
+      external: [/^three/, /^gi-dice-core/, /^oimophysics/],
     },
   },
 });

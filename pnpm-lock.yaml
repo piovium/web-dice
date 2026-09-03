@@ -14,7 +14,7 @@ importers:
 
   apps/minitool:
     dependencies:
-      web-dice-oimo:
+      gi-dice-oimo:
         specifier: workspace:*
         version: link:../../packages/web-dice-oimo
     devDependencies:
@@ -30,7 +30,7 @@ importers:
 
   apps/web:
     dependencies:
-      web-dice:
+      gi-dice:
         specifier: workspace:*
         version: link:../../packages/web-dice
     devDependencies:
@@ -52,12 +52,12 @@ importers:
       debounce:
         specifier: ^2.2.0
         version: 2.2.0
+      gi-dice-core:
+        specifier: workspace:*
+        version: link:../web-dice-core
       three:
         specifier: '>=0.160.0'
         version: 0.174.0
-      web-dice-core:
-        specifier: workspace:*
-        version: link:../web-dice-core
     devDependencies:
       '@types/three':
         specifier: ^0.173.0
@@ -99,15 +99,15 @@ importers:
       debounce:
         specifier: ^2.2.0
         version: 2.2.0
+      gi-dice-core:
+        specifier: workspace:*
+        version: link:../web-dice-core
       oimophysics:
-        specifier: file:./vendor/oimophysics
-        version: file:packages/web-dice-oimo/vendor/oimophysics
+        specifier: git+https://github.com/saharan/OimoPhysics.git#234c7a4cd4b5408fc834437fb3bb1763f7c4ccce
+        version: https://codeload.github.com/saharan/OimoPhysics/tar.gz/234c7a4cd4b5408fc834437fb3bb1763f7c4ccce
       three:
         specifier: '>=0.160.0'
         version: 0.174.0
-      web-dice-core:
-        specifier: workspace:*
-        version: link:../web-dice-core
     devDependencies:
       '@types/three':
         specifier: ^0.173.0
@@ -803,8 +803,9 @@ packages:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
 
-  oimophysics@file:packages/web-dice-oimo/vendor/oimophysics:
-    resolution: {directory: packages/web-dice-oimo/vendor/oimophysics, type: directory}
+  oimophysics@https://codeload.github.com/saharan/OimoPhysics/tar.gz/234c7a4cd4b5408fc834437fb3bb1763f7c4ccce:
+    resolution: {tarball: https://codeload.github.com/saharan/OimoPhysics/tar.gz/234c7a4cd4b5408fc834437fb3bb1763f7c4ccce}
+    version: 1.2.5
 
   path-browserify@1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
@@ -1577,7 +1578,7 @@ snapshots:
 
   normalize-path@3.0.0: {}
 
-  oimophysics@file:packages/web-dice-oimo/vendor/oimophysics: {}
+  oimophysics@https://codeload.github.com/saharan/OimoPhysics/tar.gz/234c7a4cd4b5408fc834437fb3bb1763f7c4ccce: {}
 
   path-browserify@1.0.1: {}
 

@@ -15,7 +15,7 @@ async function main() {
     force: true,
   });
 
-  // 2. 骰面图标已由 web-dice-oimo 包内联为 data URL，无需再拷贝 assets
+  // 2. 骰面图标已由 gi-dice-oimo 包内联为 data URL，无需再拷贝 assets
 
   // 3. 整理构建产物：删除垃圾文件，并把 CSS 重命名为 style.css
   const files = await readdir(dist, { recursive: true, withFileTypes: true });

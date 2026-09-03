@@ -278,7 +278,7 @@ export class DiceRenderer {
     }
     this.decisionButton = document.createElement("button");
     this.decisionButton.type = "button";
-    this.decisionButton.className = "web-dice-decision-button";
+    this.decisionButton.className = "gi-dice-decision-button";
     this.decisionButton.textContent = "确认跳过后续所有重投轮次";
     Object.assign(this.decisionButton.style, {
       position: "absolute",

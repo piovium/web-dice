@@ -7,7 +7,7 @@ import geoBg from "./assets/dice/geo.webp?inline";
 import dendroBg from "./assets/dice/dendro.webp?inline";
 import omniBg from "./assets/dice/omni.webp?inline";
 import omniSymbol from "./assets/symbols/omni.svg?inline";
-import type { DiceFaceAssets } from "web-dice-core";
+import type { DiceFaceAssets } from "gi-dice-core";
 
 /**
  * 骰面贴图默认源（混合策略，包体积与完整性兼顾）：

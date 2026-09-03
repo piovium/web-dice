@@ -1,11 +1,11 @@
 {
-  "name": "web-dice-monorepo",
+  "name": "gi-dice-monorepo",
   "private": true,
   "version": "0.0.0",
   "packageManager": "pnpm@10.17.1",
   "type": "module",
   "scripts": {
-    "build:packages": "pnpm --filter web-dice-core build && pnpm --filter web-dice build && pnpm --filter web-dice-oimo build",
+    "build:packages": "pnpm --filter gi-dice-core build && pnpm --filter gi-dice build && pnpm --filter gi-dice-oimo build",
     "dev": "pnpm --filter web-app dev",
     "build": "pnpm --filter web-app build",
     "build:minitool": "pnpm --filter minitool-app build",

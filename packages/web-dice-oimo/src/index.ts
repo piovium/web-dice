@@ -12,7 +12,7 @@ import {
   type DiceFaceAsset,
   type DiceFaceAssets,
   type DiceRoundRecord,
-} from "web-dice-core";
+} from "gi-dice-core";
 import { PhysicsBackend } from "./oimo-backend";
 import { INLINE_FACE_ASSETS } from "./assets";
 

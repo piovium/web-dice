@@ -1,7 +1,13 @@
 {
-  "name": "web-dice",
+  "name": "gi-dice",
   "version": "0.1.0",
-  "description": "Seven-element dice rolling canvas (WASM/Rapier backend). Same API as web-dice-oimo.",
+  "description": "Seven-element dice rolling canvas (WASM/Rapier backend). Same API as gi-dice-oimo.",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/piovium/web-dice.git",
+    "directory": "packages/web-dice"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -18,7 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "web-dice-core": "workspace:*",
+    "gi-dice-core": "workspace:*",
     "@dimforge/rapier3d-compat": "^0.14.0",
     "debounce": "^2.2.0"
   },

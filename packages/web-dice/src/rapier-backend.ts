@@ -4,8 +4,8 @@ import type {
   BodyTransform,
   IPhysicsBackend,
   IPhysicsWorld,
-} from "web-dice-core";
-import { diceInitPosition } from "web-dice-core";
+} from "gi-dice-core";
+import { diceInitPosition } from "gi-dice-core";
 
 export class PhysicsBackend implements IPhysicsBackend {
   private initialized = false;

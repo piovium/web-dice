@@ -3,8 +3,8 @@ import "./style.css";
 import {
   DICE_COLORS,
   ELEMENT_NAMES_ZH,
-} from "web-dice";
-import { WebDice } from "web-dice";
+} from "gi-dice";
+import { WebDice } from "gi-dice";
 
 const root = document.getElementById("root")!;
 const options = document.getElementById("dice-options")!;
